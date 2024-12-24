@@ -3,10 +3,9 @@
 ScriptFactory is a collection of automation scripts designed to streamline various development, deployment, and tool management tasks. Each script in this repository is built with simplicity and efficiency in mind.
 
 ## Features
-- **Tool Deployer**: Install and configure tools from GitHub repositories with ease.
-- Automated dependency detection and installation.
-- Intelligent executable detection with user-friendly prompts.
-- Creates symlinks for easy tool usage.
+- A growing collection of scripts for diverse automation tasks.
+- Focused on development, deployment, and tool management.
+- Modular design for easy integration and use.
 
 ## Getting Started
 ### Installation
@@ -16,18 +15,8 @@ git clone https://github.com/yourusername/ScriptFactory.git
 cd ScriptFactory
 ```
 
-### Usage
-Run the `tool_deployer.py` script:
-```bash
-python3 tool_deployer.py
-```
-
-Follow the on-screen prompts to install and set up your tools.
-
-### Requirements
-- Python 3.6 or higher
-- `pip` for managing dependencies
-- Git installed on your machine
+### Available Scripts
+- **Tool Deployer**: A script to automate the installation and configuration of tools from GitHub repositories. Check its specific [README](Tool-Deployer/README.md) for details.
 
 ## Contributing
 We welcome contributions! Please follow the guidelines in the [CONTRIBUTING.md](CONTRIBUTING.md) file.
@@ -36,4 +25,4 @@ We welcome contributions! Please follow the guidelines in the [CONTRIBUTING.md](
 This project is licensed under the [MIT License](LICENSE).
 
 ## Author
-- W1SEBYT3S, part of the **Securas SAS** team.
+- W1SEBYT3S, part of the **Securas .SAS** team.
