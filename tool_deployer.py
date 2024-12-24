@@ -14,7 +14,7 @@ def show_banner():
     """Displays the banner to the user."""
     print(banner)
     print("\t\tScriptFactory by W1SEBYT3S")
-    print("\thttps://github.com/yourusername/ScriptFactory\n")
+    print("\thttps://github.com/boukhrisssaber/ScriptFactory\n")
 
 
 
