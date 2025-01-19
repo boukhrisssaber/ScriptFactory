@@ -7,3 +7,7 @@ All notable changes to this project will be documented here.
 - Initial release of `tool_deployer.py`
 - Automatic GitHub repository cloning and tool installation.
 - Dependency detection and symlink creation.
+
+- #### Known Issues
+- No support for batch installations.
+- Limited to none dependency handling for package managers other than `pip`.
