@@ -8,6 +8,13 @@ The Tool Deployer script is part of the **ScriptFactory** project and is designe
 - Intelligent executable detection with user-friendly prompts.
 - Creates symlinks for easy access to installed tools.
 
+## FAQ
+**Q: What if no executable is detected in the repository?**  
+A: Ensure the repository contains scripts or executables. You can manually specify dependencies or use the detected path.
+
+**Q: How do I uninstall a tool?**  
+A: Delete the tool's directory in `~/tools` and its symlink in `~/bin`.
+
 ## Usage
 Run the `tool_deployer.py` script from the project directory:
 ```bash
