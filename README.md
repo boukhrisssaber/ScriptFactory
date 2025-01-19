@@ -11,7 +11,7 @@ ScriptFactory is a collection of automation scripts designed to streamline vario
 ### Installation
 Clone the repository:
 ```bash
-git clone https://github.com/yourusername/ScriptFactory.git
+git clone https://github.com/boukhrisssaber/ScriptFactory.git
 cd ScriptFactory
 ```
 
