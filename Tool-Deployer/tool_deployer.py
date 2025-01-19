@@ -1,6 +1,4 @@
-import os
-import subprocess
-import sys
+import os, sys, subprocess, re
 
 # Define the static ASCII banner
 banner = """
@@ -84,6 +82,11 @@ def ensure_path_in_environment(bin_dir):
         print(f"\nTo activate the changes, run:")
         print(f"source {shell_config}")
 
+def is_valid_url(url):
+    """Validate the GitHub repository URL."""
+    return re.match(r'https:\/\/github\.com\/[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+(\.git)?$', url)
+
+
 def main():
     # Show the fancy banner
     show_banner()
@@ -93,7 +96,12 @@ def main():
     os.makedirs(BIN_DIR, exist_ok=True)
 
     # Prompt for GitHub repo URL
+    while True:
     repo_url = input("Enter the GitHub repository URL: ").strip()
+    if is_valid_url(repo_url):
+        break
+    print("Invalid GitHub URL. Please enter a valid URL, e.g., 'https://github.com/user/repo.git'")
+ 
     tool_name = input("Enter a name for the tool (default: repo name): ").strip() or repo_url.split("/")[-1].replace(".git", "")
     install_path = os.path.join(INSTALL_DIR, tool_name)
 
