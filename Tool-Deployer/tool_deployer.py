@@ -1,4 +1,4 @@
-import os, sys, subprocess, re
+import os, sys, subprocess, re, time
 
 # Define the static ASCII banner
 banner = """
