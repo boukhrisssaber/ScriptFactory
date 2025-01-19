@@ -97,7 +97,7 @@ def main():
 
     # Prompt for GitHub repo URL
     while True:
-    repo_url = input("Enter the GitHub repository URL: ").strip()
+        repo_url = input("Enter the GitHub repository URL: ").strip()
     if is_valid_url(repo_url):
         break
     print("Invalid GitHub URL. Please enter a valid URL, e.g., 'https://github.com/user/repo.git'")
