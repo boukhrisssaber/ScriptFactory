@@ -20,13 +20,21 @@ def show_banner():
 INSTALL_DIR = os.path.expanduser("~/tools")
 BIN_DIR = os.path.expanduser("~/bin")
 
-def run_command(command, cwd=None, check=True):
-    """Run a system command."""
-    try:
-        subprocess.run(command, shell=True, check=check, cwd=cwd)
-    except subprocess.CalledProcessError as e:
-        print(f"Command failed: {command}")
-        sys.exit(1)
+def run_command(command, cwd=None, check=True, retries=3):
+    """Run a system command with retries for network operations."""
+    for attempt in range(retries):
+        try:
+            subprocess.run(command, shell=True, check=check, cwd=cwd)
+            return  # Command succeeded, exit the loop
+        except subprocess.CalledProcessError as e:
+            print(f"Attempt {attempt + 1} failed: {e}")
+            if attempt < retries - 1:
+                print("Retrying...")
+                time.sleep(2)  # Short delay before retry
+            else:
+                print(f"Command failed after {retries} attempts: {command}")
+                sys.exit(1)
+
 
 def clone_repo(repo_url, install_dir):
     """Clone a GitHub repository."""
@@ -95,13 +103,13 @@ def main():
     os.makedirs(INSTALL_DIR, exist_ok=True)
     os.makedirs(BIN_DIR, exist_ok=True)
 
-    # Prompt for GitHub repo URL
+    # Validate and get GitHub repo URL
     while True:
         repo_url = input("Enter the GitHub repository URL: ").strip()
         if is_valid_url(repo_url):
             break
         print("Invalid GitHub URL. Please enter a valid URL, e.g., 'https://github.com/user/repo.git'")
- 
+
     tool_name = input("Enter a name for the tool (default: repo name): ").strip() or repo_url.split("/")[-1].replace(".git", "")
     install_path = os.path.join(INSTALL_DIR, tool_name)
 
@@ -113,7 +121,11 @@ def main():
         run_command(f"rm -rf {install_path}")
 
     # Clone repository
-    clone_repo(repo_url, install_path)
+    try:
+        clone_repo(repo_url, install_path)
+    except Exception as e:
+        print(f"Error during cloning: {e}")
+        sys.exit(1)
 
     # Detect and handle requirements
     if not detect_requirements(install_path):
@@ -124,23 +136,19 @@ def main():
     # Detect executables
     executables = detect_executables(install_path)
     if executables:
-        if len(executables) == 1:
-            # Auto-detect the single executable but confirm with the user
-            executable_path = executables[0]
-            print(f"Automatically detected executable: {os.path.basename(executable_path)}")
-            use_auto = input(f"Do you want to use this executable? (y/n): ").strip().lower() == "y"
-            if not use_auto:
+        while True:
+            try:
                 print("Detected potential executables:")
                 for idx, exe in enumerate(executables, 1):
                     print(f"{idx}. {os.path.basename(exe)}")
                 choice = int(input("Enter the number of the executable to use: ").strip()) - 1
-                executable_path = executables[choice]
-        else:
-            print("Detected potential executables:")
-            for idx, exe in enumerate(executables, 1):
-                print(f"{idx}. {os.path.basename(exe)}")
-            choice = int(input("Enter the number of the executable to use: ").strip()) - 1
-            executable_path = executables[choice]
+                if 0 <= choice < len(executables):
+                    executable_path = executables[choice]
+                    break
+                else:
+                    raise IndexError
+            except (ValueError, IndexError):
+                print("Invalid choice. Please enter a number corresponding to one of the executables.")
     else:
         print("No executable detected in the repository.")
         return
