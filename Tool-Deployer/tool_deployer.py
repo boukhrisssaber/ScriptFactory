@@ -1,4 +1,4 @@
-import os, sys, subprocess, re, time
+import os, sys, subprocess, re, time, platform
 
 # Define the static ASCII banner
 banner = """
@@ -13,8 +13,6 @@ def show_banner():
     print(banner)
     print("\t\tScriptFactory by W1SEBYT3S")
     print("\thttps://github.com/boukhrisssaber/ScriptFactory\n")
-
-
 
 # Directories for installation
 INSTALL_DIR = os.path.expanduser("~/tools")
@@ -34,7 +32,6 @@ def run_command(command, cwd=None, check=True, retries=3):
             else:
                 print(f"Command failed after {retries} attempts: {command}")
                 sys.exit(1)
-
 
 def clone_repo(repo_url, install_dir):
     """Clone a GitHub repository."""
@@ -72,28 +69,52 @@ def detect_executables(tool_dir):
                 executables.append(file_path)
     return executables
 
-def create_symlink(executable, symlink_path):
-    """Create a symlink for the executable."""
-    print(f"Creating symlink for {executable} at {symlink_path}...")
-    if os.path.exists(symlink_path):
-        os.remove(symlink_path)
-    os.symlink(executable, symlink_path)
-    print(f"Symlink created: {symlink_path}")
-
 def ensure_path_in_environment(bin_dir):
-    """Ensure the bin directory is in the PATH."""
-    if bin_dir not in os.environ["PATH"].split(":"):
-        print(f"{bin_dir} is not in your PATH. Adding it now...")
-        shell_config = os.path.expanduser("~/.bashrc")
-        with open(shell_config, "a") as f:
-            f.write(f'\nexport PATH="{bin_dir}:$PATH"\n')
-        print(f"\nTo activate the changes, run:")
-        print(f"source {shell_config}")
+    """Ensure the bin directory is in the PATH, adapting for different OSes."""
+    system = platform.system()
+    if system == "Windows":
+        # Use setx to persistently add the bin directory to PATH
+        print(f"Adding {bin_dir} to PATH on Windows...")
+        run_command(f'setx PATH "%PATH%;{bin_dir}"', check=False)
+        print(f"\nRestart your terminal to apply the changes.")
+    else:  # For Linux/macOS
+        if bin_dir not in os.environ["PATH"].split(":"):
+            print(f"{bin_dir} is not in your PATH. Adding it now...")
+            shell_config = os.path.expanduser("~/.bashrc")
+            with open(shell_config, "a") as f:
+                f.write(f'\nexport PATH="{bin_dir}:$PATH"\n')
+            print(f"\nTo activate the changes, run:")
+            print(f"source {shell_config}")
+
+def create_symlink(executable, symlink_path):
+    """Create a symlink for the executable, handling Windows separately."""
+    system = platform.system()
+    if system == "Windows":
+        # On Windows, copy the executable to the bin_dir
+        print(f"Copying {executable} to {symlink_path} on Windows...")
+        run_command(f'copy "{executable}" "{symlink_path}"', check=False)
+    else:
+        # On Unix-like systems, create a symlink
+        print(f"Creating symlink for {executable} at {symlink_path}...")
+        if os.path.exists(symlink_path):
+            os.remove(symlink_path)
+        os.symlink(executable, symlink_path)
+        print(f"Symlink created: {symlink_path}")
 
 def is_valid_url(url):
     """Validate the GitHub repository URL."""
     return re.match(r'https:\/\/github\.com\/[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+(\.git)?$', url)
 
+def get_user_input(prompt, allow_cancel=True):
+    """Prompt the user for input, with an option to cancel."""
+    while True:
+        user_input = input(f"{prompt} ").strip()
+        if allow_cancel and user_input.lower() == "cancel":
+            print("Installation canceled by user.")
+            sys.exit(0)
+        if user_input:  # Ensure non-empty input
+            return user_input
+        print("Input cannot be empty. Please try again.")
 
 def main():
     # Show the fancy banner
@@ -103,19 +124,27 @@ def main():
     os.makedirs(INSTALL_DIR, exist_ok=True)
     os.makedirs(BIN_DIR, exist_ok=True)
 
+    # Detect the OS and inform the user
+    system = platform.system()
+    print(f"Detected Operating System: {system}")
+
     # Validate and get GitHub repo URL
     while True:
-        repo_url = input("Enter the GitHub repository URL: ").strip()
+        repo_url = get_user_input("Enter the GitHub repository URL (or type 'Cancel' to exit):")
         if is_valid_url(repo_url):
             break
         print("Invalid GitHub URL. Please enter a valid URL, e.g., 'https://github.com/user/repo.git'")
 
-    tool_name = input("Enter a name for the tool (default: repo name): ").strip() or repo_url.split("/")[-1].replace(".git", "")
+    tool_name = get_user_input(
+        "Enter a name for the tool (default: repo name) (or type 'Cancel' to exit):",
+        allow_cancel=True,
+    ) or repo_url.split("/")[-1].replace(".git", "")
     install_path = os.path.join(INSTALL_DIR, tool_name)
 
     if os.path.exists(install_path):
         print(f"{tool_name} is already installed in {install_path}.")
-        if input("Do you want to reinstall it? (y/n): ").lower() != "y":
+        reinstall = get_user_input("Do you want to reinstall it? (y/n or type 'Cancel' to exit):").lower()
+        if reinstall != "y":
             print("Exiting...")
             return
         run_command(f"rm -rf {install_path}")
@@ -129,7 +158,7 @@ def main():
 
     # Detect and handle requirements
     if not detect_requirements(install_path):
-        install_deps = input("Does this tool require additional dependencies? (y/n): ").strip().lower() == "y"
+        install_deps = get_user_input("Does this tool require additional dependencies? (y/n or type 'Cancel' to exit):").strip().lower() == "y"
         if install_deps:
             print("Please install the dependencies manually or provide further instructions.")
 
@@ -141,7 +170,7 @@ def main():
                 print("Detected potential executables:")
                 for idx, exe in enumerate(executables, 1):
                     print(f"{idx}. {os.path.basename(exe)}")
-                choice = int(input("Enter the number of the executable to use: ").strip()) - 1
+                choice = int(get_user_input("Enter the number of the executable to use (or type 'Cancel' to exit):")) - 1
                 if 0 <= choice < len(executables):
                     executable_path = executables[choice]
                     break

@@ -4,9 +4,17 @@ All notable changes to this project will be documented here.
 
 ## [1.0.1] - 2025-01-20
 ### Added
-- GitHub repository link Input Validation.
+- Cross-platform compatibility for Windows:
+  - Detect operating system and adapt commands accordingly.
+  - Use `setx` for adding `BIN_DIR` to the PATH on Windows.
+- Option to cancel installation at any critical prompt with the input "Cancel".
+
 ### Improved
-- Integrate improved error handling throughout the script,
+- Enhanced error handling:
+  - Specific error messages for failed commands.
+  - Retry logic for network-dependent operations such as repository cloning.
+- Input validation for GitHub repository URLs.
+- Usability improvements in handling user inputs and executable detection.
 
 ## [1.0.0] - 2024-12-24
 ### Added
