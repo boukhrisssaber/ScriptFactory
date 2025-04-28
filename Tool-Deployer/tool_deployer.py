@@ -2,6 +2,8 @@ import os, sys, subprocess, re, time, platform
 from tqdm import tqdm
 from colorama import init, Fore, Style
 import argparse
+from dependency_manager import DependencyManager
+from tool_manager import ToolManager
 
 # Initialize colorama
 init()
@@ -69,15 +71,38 @@ def clone_repo(repo_url, install_dir):
     config.print(f"Cloning repository {repo_url} into {install_dir}...", Fore.CYAN)
     run_command(f"git clone {repo_url} {install_dir}")
 
-def detect_requirements(tool_dir):
-    """Check if a requirements.txt file exists and handle dependencies."""
-    requirements_file = os.path.join(tool_dir, "requirements.txt")
-    if os.path.exists(requirements_file):
-        config.print("Detected a requirements.txt file. Installing dependencies...", Fore.GREEN)
-        run_command(f"{sys.executable} -m pip install -r {requirements_file}")
-        return True
-    config.print("No requirements.txt file detected.", Fore.YELLOW)
-    return False
+def handle_dependencies(tool_dir):
+    """Handle dependencies using the DependencyManager"""
+    dep_manager = DependencyManager(config)
+    
+    # Detect package managers
+    managers = dep_manager.detect_package_managers(tool_dir)
+    if not managers:
+        config.print("No package managers detected.", Fore.YELLOW)
+        return False
+    
+    config.print(f"Detected package managers: {', '.join(managers)}", Fore.GREEN)
+    
+    # Verify dependencies
+    config.print("Verifying dependencies...", Fore.CYAN)
+    results = dep_manager.verify_dependencies(tool_dir)
+    
+    # Display dependency status
+    for manager, deps in results.items():
+        if deps:
+            config.print(f"\n{manager.upper()} Dependencies:", Fore.CYAN)
+            for package, required_version, meets_requirements in deps:
+                status_color = Fore.GREEN if meets_requirements else Fore.RED
+                status = "✓" if meets_requirements else "✗"
+                config.print(f"{status} {package} (required: {required_version})", status_color)
+    
+    # Install dependencies
+    for manager in managers:
+        if not dep_manager.install_dependencies(tool_dir, manager):
+            config.print(f"Failed to install dependencies using {manager}", Fore.RED)
+            return False
+    
+    return True
 
 def make_executable(path):
     """Ensure a file has executable permissions."""
@@ -93,7 +118,7 @@ def detect_executables(tool_dir):
         for file in files:
             file_path = os.path.join(root, file)
             if (
-                file.endswith((".py", ".sh")) and
+                file.endswith((".py", ".sh", ".js")) and
                 "sample" not in file.lower() and
                 not file.startswith(".git")
             ):
@@ -138,7 +163,7 @@ def get_user_input(prompt, allow_cancel=True):
     while True:
         user_input = input(f"{Fore.CYAN}{prompt}{Style.RESET_ALL} ").strip()
         if allow_cancel and user_input.lower() == "cancel":
-            config.print("Installation canceled by user.", Fore.YELLOW)
+            config.print("Operation canceled by user.", Fore.YELLOW)
             sys.exit(0)
         if user_input:  # Ensure non-empty input
             return user_input
@@ -150,38 +175,45 @@ def parse_arguments():
     parser.add_argument("-q", "--quiet", action="store_true", help="Run in quiet mode (no output)")
     parser.add_argument("--no-color", action="store_true", help="Disable colored output")
     parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose output")
+    
+    # Add subcommands
+    subparsers = parser.add_subparsers(dest="command", help="Command to execute")
+    
+    # Install command
+    install_parser = subparsers.add_parser("install", help="Install a new tool")
+    install_parser.add_argument("url", nargs="?", help="GitHub repository URL")
+    
+    # List command
+    subparsers.add_parser("list", help="List installed tools")
+    
+    # Uninstall command
+    uninstall_parser = subparsers.add_parser("uninstall", help="Uninstall a tool")
+    uninstall_parser.add_argument("name", help="Name of the tool to uninstall")
+    
+    # Update command
+    update_parser = subparsers.add_parser("update", help="Update an installed tool")
+    update_parser.add_argument("name", help="Name of the tool to update")
+    
     return parser.parse_args()
 
-def main():
-    # Parse command line arguments
-    args = parse_arguments()
-    config.quiet = args.quiet
-    config.no_color = args.no_color
-    config.verbose = args.verbose
-
-    # Show the fancy banner
-    show_banner()
-    
-    # Ensure necessary directories exist
-    os.makedirs(INSTALL_DIR, exist_ok=True)
-    os.makedirs(BIN_DIR, exist_ok=True)
-
-    # Detect the OS and inform the user
-    system = platform.system()
-    config.print(f"Detected Operating System: {system}", Fore.CYAN)
-
-    # Validate and get GitHub repo URL
-    while True:
-        repo_url = get_user_input("Enter the GitHub repository URL (or type 'Cancel' to exit):")
-        if is_valid_url(repo_url):
-            break
-        config.print("Invalid GitHub URL. Please enter a valid URL, e.g., 'https://github.com/user/repo.git'", Fore.RED)
+def handle_install(args):
+    """Handle the install command"""
+    # Get GitHub repo URL
+    repo_url = args.url
+    if not repo_url:
+        while True:
+            repo_url = get_user_input("Enter the GitHub repository URL (or type 'Cancel' to exit):")
+            if is_valid_url(repo_url):
+                break
+            config.print("Invalid GitHub URL. Please enter a valid URL, e.g., 'https://github.com/user/repo.git'", Fore.RED)
 
     tool_name = get_user_input(
         "Enter a name for the tool (default: repo name) (or type 'Cancel' to exit):",
         allow_cancel=True,
     ) or repo_url.split("/")[-1].replace(".git", "")
-    install_path = os.path.join(INSTALL_DIR, tool_name)
+    
+    tool_manager = ToolManager(config)
+    install_path = os.path.join(tool_manager.install_dir, tool_name)
 
     if os.path.exists(install_path):
         config.print(f"{tool_name} is already installed in {install_path}.", Fore.YELLOW)
@@ -198,11 +230,8 @@ def main():
         config.print(f"Error during cloning: {e}", Fore.RED)
         sys.exit(1)
 
-    # Detect and handle requirements
-    if not detect_requirements(install_path):
-        install_deps = get_user_input("Does this tool require additional dependencies? (y/n or type 'Cancel' to exit):").strip().lower() == "y"
-        if install_deps:
-            config.print("Please install the dependencies manually or provide further instructions.", Fore.YELLOW)
+    # Handle dependencies
+    handle_dependencies(install_path)
 
     # Detect executables
     executables = detect_executables(install_path)
@@ -226,14 +255,73 @@ def main():
 
     if executable_path:
         make_executable(executable_path)
-        symlink_path = os.path.join(BIN_DIR, tool_name)
-        create_symlink(executable_path, symlink_path)
-        config.print(f"{tool_name} is now installed. You can run it using '{tool_name}' if {BIN_DIR} is in your PATH.", Fore.GREEN)
+        symlink_path = os.path.join(tool_manager.bin_dir, tool_name)
+        if tool_manager.create_symlink(executable_path, symlink_path):
+            tool_manager.install_tool(tool_name, install_path, executable_path)
+            config.print(f"{tool_name} is now installed. You can run it using '{tool_name}' if {tool_manager.bin_dir} is in your PATH.", Fore.GREEN)
+        else:
+            config.print(f"Failed to create symlink for {tool_name}.", Fore.RED)
     else:
         config.print(f"No valid executable was selected. {tool_name} is installed in {install_path}.", Fore.YELLOW)
 
     # Ensure BIN_DIR is in PATH
-    ensure_path_in_environment(BIN_DIR)
+    tool_manager.ensure_path_in_environment()
+
+def handle_list():
+    """Handle the list command"""
+    tool_manager = ToolManager(config)
+    tools = tool_manager.list_tools()
+    
+    if not tools:
+        config.print("No tools installed.", Fore.YELLOW)
+        return
+    
+    config.print("\nInstalled Tools:", Fore.CYAN)
+    for tool in tools:
+        config.print(f"\n{tool['name']}:", Fore.GREEN)
+        config.print(f"  Path: {tool['path']}", Fore.WHITE)
+        config.print(f"  Executable: {tool['executable']}", Fore.WHITE)
+        config.print(f"  Installed: {tool['installed_at']}", Fore.WHITE)
+        config.print(f"  Last Updated: {tool['last_updated']}", Fore.WHITE)
+
+def handle_uninstall(args):
+    """Handle the uninstall command"""
+    tool_manager = ToolManager(config)
+    if tool_manager.uninstall_tool(args.name):
+        config.print(f"Successfully uninstalled {args.name}", Fore.GREEN)
+    else:
+        config.print(f"Failed to uninstall {args.name}", Fore.RED)
+
+def handle_update(args):
+    """Handle the update command"""
+    tool_manager = ToolManager(config)
+    if tool_manager.update_tool(args.name):
+        config.print(f"Successfully updated {args.name}", Fore.GREEN)
+    else:
+        config.print(f"Failed to update {args.name}", Fore.RED)
+
+def main():
+    # Parse command line arguments
+    args = parse_arguments()
+    config.quiet = args.quiet
+    config.no_color = args.no_color
+    config.verbose = args.verbose
+
+    # Show the fancy banner
+    show_banner()
+    
+    # Handle commands
+    if args.command == "install":
+        handle_install(args)
+    elif args.command == "list":
+        handle_list()
+    elif args.command == "uninstall":
+        handle_uninstall(args)
+    elif args.command == "update":
+        handle_update(args)
+    else:
+        # If no command specified, show help
+        parse_arguments(["-h"])
 
 if __name__ == "__main__":
     main()
