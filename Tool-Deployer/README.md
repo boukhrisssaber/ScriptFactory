@@ -98,4 +98,4 @@ python tool_deployer.py
 - If you get "externally-managed-environment" errors, make sure you're using the virtual environment.
 
 ## Author
-- W1SEBYT3S, part of the **Securas SAS** team.
+- Saber Boukhriss, CyberSecurity enthusiast.
