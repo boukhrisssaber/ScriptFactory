@@ -27,6 +27,11 @@ chmod +x install_requirements.sh
 ./install_requirements.sh
 ```
 
+The script will:
+- Check for and install python3-venv if needed
+- Create a virtual environment
+- Install all required dependencies in the virtual environment
+
 ### For Windows:
 ```batch
 # Run the batch script
@@ -35,15 +40,26 @@ install_requirements.bat
 
 ### Manual installation:
 ```bash
-# Using Python
-python install_requirements.py
+# Create and activate virtual environment
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Or directly with pip
+# Install requirements
 pip install -r requirements.txt
 ```
 
 ## Usage
-Run the `tool_deployer.py` script from the project directory:
+To run the tool, first activate the virtual environment:
+
+```bash
+# On Unix-like systems
+source venv/bin/activate
+
+# On Windows
+venv\Scripts\activate
+```
+
+Then run the tool:
 ```bash
 python tool_deployer.py
 ```
@@ -62,10 +78,15 @@ python tool_deployer.py
 - Python 3.6 or higher
 - `pip` for managing dependencies
 - Git installed on your machine
+- python3-venv (for Unix-like systems)
 
 ## Example
 Install a sample tool from GitHub:
 ```bash
+# Activate virtual environment
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Run the tool
 python tool_deployer.py
 # Follow the prompts to install and configure the tool.
 ```
@@ -74,6 +95,7 @@ python tool_deployer.py
 - Ensure Python and Git are installed and available in your system PATH.
 - If dependencies fail to install, manually check the `requirements.txt` file in the tool's directory.
 - Run the appropriate installation script for your system to reinstall dependencies if needed.
+- If you get "externally-managed-environment" errors, make sure you're using the virtual environment.
 
 ## Author
 - W1SEBYT3S, part of the **Securas SAS** team.
