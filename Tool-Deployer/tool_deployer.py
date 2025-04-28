@@ -158,14 +158,14 @@ def is_valid_url(url):
     """Validate the GitHub repository URL."""
     return re.match(r'https:\/\/github\.com\/[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+(\.git)?$', url)
 
-def get_user_input(prompt, allow_cancel=True):
+def get_user_input(prompt, allow_cancel=True, allow_empty=False):
     """Prompt the user for input, with an option to cancel."""
     while True:
         user_input = input(f"{Fore.CYAN}{prompt}{Style.RESET_ALL} ").strip()
         if allow_cancel and user_input.lower() == "cancel":
             config.print("Operation canceled by user.", Fore.YELLOW)
             sys.exit(0)
-        if user_input:  # Ensure non-empty input
+        if allow_empty or user_input:  # Allow empty input if allow_empty is True
             return user_input
         config.print("Input cannot be empty. Please try again.", Fore.RED)
 
@@ -214,6 +214,7 @@ def handle_install(args):
     tool_name = get_user_input(
         f"Enter a name for the tool (default: {default_tool_name}) (or type 'Cancel' to exit):",
         allow_cancel=True,
+        allow_empty=True  # Allow empty input to use default
     )
     
     # Use default name if input is empty
