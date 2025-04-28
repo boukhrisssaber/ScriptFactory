@@ -4,6 +4,7 @@ import platform
 import json
 from typing import Dict, List, Optional, Tuple
 from datetime import datetime
+from colorama import Fore
 
 class ToolManager:
     """Manages installed tools and their operations"""
