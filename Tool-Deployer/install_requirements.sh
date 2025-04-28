@@ -53,6 +53,12 @@ fi
 print_colored "$CYAN" "Activating virtual environment..."
 source venv/bin/activate
 
+# Verify we're in the virtual environment
+if [ -z "$VIRTUAL_ENV" ]; then
+    print_colored "$RED" "Failed to activate virtual environment."
+    exit 1
+fi
+
 # Upgrade pip
 print_colored "$CYAN" "Upgrading pip..."
 python -m pip install --upgrade pip
