@@ -7,24 +7,36 @@ The Tool Deployer script is part of the **ScriptFactory** project and is designe
 - Automated dependency detection and installation.
 - Intelligent executable detection with user-friendly prompts.
 - Creates symlinks for easy access to installed tools.
+- Colored output and progress bars for better user experience.
+- Quiet mode for automation and scripting.
 
-## Why Use Tool Deployer?
-- 🚀 **Quick Deployments**: Automates tool setup from GitHub repositories.
-- 🛠️ **No Hassle**: Detects and installs dependencies effortlessly.
-- 🔗 **Convenience**: Creates symlinks for easy access.
+## Installation
+1. Clone the repository:
+```bash
+git clone https://github.com/boukhrisssaber/ScriptFactory.git
+cd ScriptFactory/Tool-Deployer
+```
 
-## FAQ
-**Q: What if no executable is detected in the repository?**  
-A: Ensure the repository contains scripts or executables. You can manually specify dependencies or use the detected path.
+2. Install the requirements using the provided script:
+```bash
+python install_requirements.py
+```
 
-**Q: How do I uninstall a tool?**  
-A: Delete the tool's directory in `~/tools` and its symlink in `~/bin`.
+Or manually install the requirements:
+```bash
+pip install -r requirements.txt
+```
 
 ## Usage
 Run the `tool_deployer.py` script from the project directory:
 ```bash
-python3 tool_deployer.py
+python tool_deployer.py
 ```
+
+### Command Line Options
+- `-q` or `--quiet`: Run in quiet mode (no output)
+- `--no-color`: Disable colored output
+- `-v` or `--verbose`: Enable verbose output
 
 ### Steps:
 1. Enter the GitHub repository URL of the tool to deploy.
@@ -39,13 +51,14 @@ python3 tool_deployer.py
 ## Example
 Install a sample tool from GitHub:
 ```bash
-python3 tool_deployer.py
+python tool_deployer.py
 # Follow the prompts to install and configure the tool.
 ```
 
 ## Troubleshooting
 - Ensure Python and Git are installed and available in your system PATH.
 - If dependencies fail to install, manually check the `requirements.txt` file in the tool's directory.
+- Run `python install_requirements.py` to reinstall dependencies if needed.
 
 ## Author
 - W1SEBYT3S, part of the **Securas SAS** team.
