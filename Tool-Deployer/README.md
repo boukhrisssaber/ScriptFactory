@@ -19,7 +19,7 @@ cd ScriptFactory/Tool-Deployer
 
 2. Install the requirements using one of the following methods:
 
-### For Unix-like systems (Linux/macOS):
+### For Linux/macOS systems:
 ```bash
 # Make the script executable
 chmod +x install_requirements.sh
@@ -97,5 +97,8 @@ python tool_deployer.py
 - Run the appropriate installation script for your system to reinstall dependencies if needed.
 - If you get "externally-managed-environment" errors, make sure you're using the virtual environment.
 
+## License
+This project is licensed under the [MIT License](LICENSE).
+
 ## Author
-- W1SEBYT3S, part of the **Securas SAS** team.
+- Saber Boukhriss, CyberSecurity enthusiast.
