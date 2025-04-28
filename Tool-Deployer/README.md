@@ -17,13 +17,28 @@ git clone https://github.com/boukhrisssaber/ScriptFactory.git
 cd ScriptFactory/Tool-Deployer
 ```
 
-2. Install the requirements using the provided script:
+2. Install the requirements using one of the following methods:
+
+### For Unix-like systems (Linux/macOS):
 ```bash
-python install_requirements.py
+# Make the script executable
+chmod +x install_requirements.sh
+# Run the script
+./install_requirements.sh
 ```
 
-Or manually install the requirements:
+### For Windows:
+```batch
+# Run the batch script
+install_requirements.bat
+```
+
+### Manual installation:
 ```bash
+# Using Python
+python install_requirements.py
+
+# Or directly with pip
 pip install -r requirements.txt
 ```
 
@@ -58,7 +73,7 @@ python tool_deployer.py
 ## Troubleshooting
 - Ensure Python and Git are installed and available in your system PATH.
 - If dependencies fail to install, manually check the `requirements.txt` file in the tool's directory.
-- Run `python install_requirements.py` to reinstall dependencies if needed.
+- Run the appropriate installation script for your system to reinstall dependencies if needed.
 
 ## Author
 - W1SEBYT3S, part of the **Securas SAS** team.
