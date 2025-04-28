@@ -25,4 +25,4 @@ We welcome contributions! Please follow the guidelines in the [CONTRIBUTING.md](
 This project is licensed under the [MIT License](LICENSE).
 
 ## Author
-- W1SEBYT3S, part of the **Securas .SAS** team.
+- Saber Boukhriss, CyberSecurity enthusiast.
