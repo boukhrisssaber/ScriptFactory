@@ -9,9 +9,9 @@ from tool_manager import ToolManager
 init()
 
 # Define the static ASCII banner
-banner = """
+banner = r"""
  __________  ____  __     ___  _______  __   ______  _________ 
-/_  __/ __ \/ __ \/ /    / _ \/ __/ _ \/ /  / __ \ \/ / __/ _ \\
+/_  __/ __ \/ __ \/ /    / _ \/ __/ _ \/ /  / __ \ \/ / __/ _ \
  / / / /_/ / /_/ / /__  / // / _// ___/ /__/ /_/ /\  / _// , _/
 /_/  \____/\____/____/ /____/___/_/  /____/\____/ /_/___/_/|_|                                                             TOOL DEPLOYER v1.0.0
 """
@@ -169,7 +169,7 @@ def get_user_input(prompt, allow_cancel=True):
             return user_input
         config.print("Input cannot be empty. Please try again.", Fore.RED)
 
-def parse_arguments():
+def parse_arguments(args=None):
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(description="Tool Deployer - Automate tool installation from GitHub")
     parser.add_argument("-q", "--quiet", action="store_true", help="Run in quiet mode (no output)")
@@ -194,7 +194,7 @@ def parse_arguments():
     update_parser = subparsers.add_parser("update", help="Update an installed tool")
     update_parser.add_argument("name", help="Name of the tool to update")
     
-    return parser.parse_args()
+    return parser.parse_args(args)
 
 def handle_install(args):
     """Handle the install command"""
