@@ -207,10 +207,19 @@ def handle_install(args):
                 break
             config.print("Invalid GitHub URL. Please enter a valid URL, e.g., 'https://github.com/user/repo.git'", Fore.RED)
 
+    # Get default tool name from repo URL
+    default_tool_name = repo_url.split("/")[-1].replace(".git", "")
+    
+    # Get tool name with empty input using default
     tool_name = get_user_input(
-        "Enter a name for the tool (default: repo name) (or type 'Cancel' to exit):",
+        f"Enter a name for the tool (default: {default_tool_name}) (or type 'Cancel' to exit):",
         allow_cancel=True,
-    ) or repo_url.split("/")[-1].replace(".git", "")
+    )
+    
+    # Use default name if input is empty
+    if not tool_name:
+        tool_name = default_tool_name
+        config.print(f"Using default name: {tool_name}", Fore.CYAN)
     
     tool_manager = ToolManager(config)
     install_path = os.path.join(tool_manager.install_dir, tool_name)
